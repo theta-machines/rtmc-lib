@@ -22,7 +22,7 @@ converted during the parsing stage.
     </tr>
     <tr>
         <td>Distance</td>
-        <td>mm</td>
+        <td>m</td>
     </tr>
     <tr>
         <td>Angle</td>

@@ -147,7 +147,7 @@ bool parse_word (
 
 
 /*
-    This function outputs a path based on parsed data
+    This function outputs a `parsed_block` based on parsed data.
 
 
 
@@ -178,7 +178,7 @@ bool parse_word (
     derivation method applies to all polynomial interpolation methods (cubic
     and quartic).
 
-    For trigonometric interpolation methods, the form x(s) = Asin(Bs + C) + D
+    For trigonometric interpolation methods, x(s) = Asin(B(s - C)) + D
     is used.
 
     For helical interpolation, some axes are in the polynomial form, while
@@ -187,48 +187,43 @@ bool parse_word (
     the Z-Axis would be polynomial-type (moving in a straight line), while the
     X and Y axes would be trigonometric-type (moving together in a circle).
 */
-void generate_path(
+void generate_parsed_block(
     const double* start_coords, 
     const double* end_coords, 
     const double feed_rate, 
     const modal_data_t* modal_data, 
-    rtmc_path_t* path
+    rtmc_parsed_block_t* parsed_block
     ) {
     if(modal_data->motion_mode == G00) {
-        path->type = RTMC_POLYNOMIAL;
-        path->feed_rate = RTMC_RAPID_RATE;
+        parsed_block->path_type = RTMC_POLYNOMIAL;
+        parsed_block->feed_rate = RTMC_RAPID_RATE;
 
         // set coefficients (polynomial, linear)
         for(int i = 0; i < RTMC_NUM_AXES; i++) {
-            path->coefficients[i][0] = 0;
-            path->coefficients[i][1] = 0;
-            path->coefficients[i][2] = end_coords[i] - start_coords[i];
-            path->coefficients[i][3] = start_coords[i];
+            parsed_block->coefficients[i][0] = 0;
+            parsed_block->coefficients[i][1] = 0;
+            parsed_block->coefficients[i][2] = end_coords[i] - start_coords[i];
+            parsed_block->coefficients[i][3] = start_coords[i];
         }
     }
     else if(modal_data->motion_mode == G01) {
         if(feed_rate > 0) {
-            path->type = RTMC_POLYNOMIAL;
-            path->feed_rate = feed_rate;
+            parsed_block->path_type = RTMC_POLYNOMIAL;
+            parsed_block->feed_rate = feed_rate;
 
             // set coefficients (polynomial, linear)
             for(int i = 0; i < RTMC_NUM_AXES; i++) {
-                path->coefficients[i][0] = 0;
-                path->coefficients[i][1] = 0;
-                path->coefficients[i][2] = end_coords[i] - start_coords[i];
-                path->coefficients[i][3] = start_coords[i];
+                parsed_block->coefficients[i][0] = 0;
+                parsed_block->coefficients[i][1] = 0;
+                parsed_block->coefficients[i][2] = end_coords[i] - start_coords[i];
+                parsed_block->coefficients[i][3] = start_coords[i];
             }   
         }
         else {
-            // invalid feed rate, invalidate the path
-            path->is_valid = false;
-            path->error_msg = "Feed rate is zero or negative";
+            // invalid feed rate, invalidate the block
+            parsed_block->is_valid = false;
+            parsed_block->error_msg = "Feed rate is zero or negative";
         }
-    }
-    else {
-        // unknown motion mode, invalidate the path
-        path->is_valid = false;
-        path->error_msg = "Unknown motion mode";
     }
 }
 
@@ -337,11 +332,12 @@ state_t get_next_state(state_t current_state, char c) {
 
 
 /*
-    Parse a g-code string (called a block) and directly modify the `path` 
-    argument. Strings must be properly terminated with the null character 
-    ('\0').
+    Parse a g-code string (called a block) and directly modify the
+    `parsed_block` argument. Strings must be properly terminated with the
+    null character ('\0').
 */
-void rtmc_parse(const char* block, const double* start_coords, rtmc_path_t* path) {
+// TODO: change return type to rtmc_parsed_block_t
+void rtmc_parse(const char* block, const double* start_coords, rtmc_parsed_block_t* parsed_block) {
     // persistent data
     static modal_data_t modal_data;
     static double feed_rate = 0;
@@ -357,7 +353,7 @@ void rtmc_parse(const char* block, const double* start_coords, rtmc_path_t* path
     int value_str_index = 0;
 
     // make path valid by default
-    path->is_valid = true;
+    parsed_block->is_valid = true;
 
     // initialize end coordinates
     double end_coords[RTMC_NUM_AXES];
@@ -406,15 +402,15 @@ void rtmc_parse(const char* block, const double* start_coords, rtmc_path_t* path
             bool valid_word = parse_word(&word, &modal_data, &feed_rate, end_coords);
             if(!valid_word) {
                 // flag error and stop parsing
-                path->is_valid = false;
-                path->error_msg = "Invalid G-code word";
+                parsed_block->is_valid = false;
+                parsed_block->error_msg = "Invalid G-code word";
                 break;
             }
         }
         else if(state == ERROR_STATE) {
             // flag error and stop parsing
-            path->is_valid = false;
-            path->error_msg = "Grammar error in G-code block";
+            parsed_block->is_valid = false;
+            parsed_block->error_msg = "Grammar error in G-code block";
             break;
         }
         // note: there is no `else if(state == IDLE_STATE)` because
@@ -422,7 +418,7 @@ void rtmc_parse(const char* block, const double* start_coords, rtmc_path_t* path
     }
 
     // if parsing was successful, generate the path
-    if(path->is_valid) {
-        generate_path(start_coords, end_coords, feed_rate, &modal_data, path);
+    if(parsed_block->is_valid) {
+        generate_parsed_block(start_coords, end_coords, feed_rate, &modal_data, parsed_block);
     }
 }
