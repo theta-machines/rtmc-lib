@@ -27,7 +27,13 @@ extern "C" {
     Decimal values with more than RTMC_MAX_DECIMAL_LENGTH characters will be
     truncated. For long numbers, use "1E-18" instead of "0.000000000000000001".
 */
-void rtmc_parse(const char* block, const double* start_coords, rtmc_parsed_block_t* parsed_block);
+rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords);
+
+/*
+    A g-code block's meaning depends on modal data set by previous g-code 
+    blocks. This function clears that data.
+*/
+void rtmc_flush_modal_data();
 
 
 

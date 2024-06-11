@@ -63,6 +63,12 @@ typedef struct {
 
 
 
+// persistent (modal) data declaration
+static modal_data_t modal_data;
+static double feed_rate = 0;
+
+
+
 /*
     Parse the key/value pairs (a.k.a., words) and update the modal data
 
@@ -73,12 +79,7 @@ typedef struct {
     `modal_data`, `feed_rate`, and `end_coords` are all passed by reference
     and can be modified by this function.
 */
-bool parse_word (
-    const word_t* word,
-    modal_data_t* modal_data,
-    double* feed_rate,
-    double* end_coords
-    ) {
+bool parse_word (const word_t* word, double* end_coords) {
 
     if(word->key == 'A') { // A-words
         end_coords[RTMC_A_AXIS] = word->value;
@@ -90,14 +91,14 @@ bool parse_word (
         end_coords[RTMC_C_AXIS] = word->value;
     }
     else if(word->key == 'F') { // F-words
-        *feed_rate = word->value;
+        feed_rate = word->value;
     }
     else if(word->key == 'G') { // G-words
         if(word->value == 0) { // G00 word
-            modal_data->motion_mode = G00;
+            modal_data.motion_mode = G00;
         }
         else if(word->value == 1) { // G01 word
-            modal_data->motion_mode = G01;
+            modal_data.motion_mode = G01;
         }
         else {
             // unrecognized value
@@ -106,7 +107,7 @@ bool parse_word (
     }
     else if(word->key == 'P') { // P-words
         // TODO: can also be a parameter
-        // use if(modal_data->motion_mode == SOMETHING) to determine behavior
+        // use if(modal_data.motion_mode == SOMETHING) to determine behavior
         end_coords[RTMC_P_AXIS] = word->value;
     }
     else if(word->key == 'Q') { // Q-words
@@ -147,7 +148,7 @@ bool parse_word (
 
 
 /*
-    This function outputs a `parsed_block` based on parsed data.
+    This function generates path data and adds it to the `parsed_block`.
 
 
 
@@ -187,14 +188,16 @@ bool parse_word (
     the Z-Axis would be polynomial-type (moving in a straight line), while the
     X and Y axes would be trigonometric-type (moving together in a circle).
 */
-void generate_parsed_block(
-    const double* start_coords, 
-    const double* end_coords, 
-    const double feed_rate, 
-    const modal_data_t* modal_data, 
-    rtmc_parsed_block_t* parsed_block
+void generate_path(
+    rtmc_parsed_block_t* parsed_block,
+    const double* start_coords,
+    const double* end_coords
     ) {
-    if(modal_data->motion_mode == G00) {
+
+    // set is_path to true by default
+    parsed_block->is_path = true;
+
+    if(modal_data.motion_mode == G00) {
         parsed_block->path_type = RTMC_POLYNOMIAL;
         parsed_block->feed_rate = RTMC_RAPID_RATE;
 
@@ -206,7 +209,7 @@ void generate_parsed_block(
             parsed_block->coefficients[i][3] = start_coords[i];
         }
     }
-    else if(modal_data->motion_mode == G01) {
+    else if(modal_data.motion_mode == G01) {
         if(feed_rate > 0) {
             parsed_block->path_type = RTMC_POLYNOMIAL;
             parsed_block->feed_rate = feed_rate;
@@ -224,6 +227,10 @@ void generate_parsed_block(
             parsed_block->is_valid = false;
             parsed_block->error_msg = "Feed rate is zero or negative";
         }
+    }
+    else {
+        // no path is parsed, set is_path to false
+        parsed_block->is_path = false;
     }
 }
 
@@ -336,11 +343,9 @@ state_t get_next_state(state_t current_state, char c) {
     `parsed_block` argument. Strings must be properly terminated with the
     null character ('\0').
 */
-// TODO: change return type to rtmc_parsed_block_t
-void rtmc_parse(const char* block, const double* start_coords, rtmc_parsed_block_t* parsed_block) {
-    // persistent data
-    static modal_data_t modal_data;
-    static double feed_rate = 0;
+rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
+    // object to be returned
+    rtmc_parsed_block_t parsed_block;
 
     // g-code word (key/value pair)
     word_t word;
@@ -353,7 +358,7 @@ void rtmc_parse(const char* block, const double* start_coords, rtmc_parsed_block
     int value_str_index = 0;
 
     // make path valid by default
-    parsed_block->is_valid = true;
+    parsed_block.is_valid = true;
 
     // initialize end coordinates
     double end_coords[RTMC_NUM_AXES];
@@ -399,18 +404,18 @@ void rtmc_parse(const char* block, const double* start_coords, rtmc_parsed_block
             word.value = strtod(value_str, NULL); // TODO: strtod() could use error handling
 
             // update modal data based on new g-code word (key/value pair)
-            bool valid_word = parse_word(&word, &modal_data, &feed_rate, end_coords);
+            bool valid_word = parse_word(&word, end_coords);
             if(!valid_word) {
                 // flag error and stop parsing
-                parsed_block->is_valid = false;
-                parsed_block->error_msg = "Invalid G-code word";
+                parsed_block.is_valid = false;
+                parsed_block.error_msg = "Invalid G-code word";
                 break;
             }
         }
         else if(state == ERROR_STATE) {
             // flag error and stop parsing
-            parsed_block->is_valid = false;
-            parsed_block->error_msg = "Grammar error in G-code block";
+            parsed_block.is_valid = false;
+            parsed_block.error_msg = "Grammar error in G-code block";
             break;
         }
         // note: there is no `else if(state == IDLE_STATE)` because
@@ -418,7 +423,9 @@ void rtmc_parse(const char* block, const double* start_coords, rtmc_parsed_block
     }
 
     // if parsing was successful, generate the path
-    if(parsed_block->is_valid) {
-        generate_parsed_block(start_coords, end_coords, feed_rate, &modal_data, parsed_block);
+    if(parsed_block.is_valid) {
+        generate_path(&parsed_block, start_coords, end_coords);
     }
+
+    return parsed_block;
 }
