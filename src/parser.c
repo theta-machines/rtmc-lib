@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "rtmc_magic_numbers.h"
+#include "rtmc_math.h"
 #include "rtmc_parser.h"
 
 
@@ -70,6 +71,19 @@ static double feed_rate = 0;
 
 
 /*
+    A g-code block's meaning depends on modal data set by previous g-code 
+    blocks. This function clears that data.
+*/
+void rtmc_flush_modal_data() {
+    feed_rate = 0;
+    modal_data.motion_mode = UNDEFINED_MOTION_MODE;
+    modal_data.plane_mode = UNDEFINED_PLANE_MODE;
+    modal_data.distance_mode = UNDEFINED_DISTANCE_MODE;
+}
+
+
+
+/*
     Parse the key/value pairs (a.k.a., words) and update the modal data
 
     Note: some keys have multiple meanings based on context. For example,
@@ -81,29 +95,48 @@ static double feed_rate = 0;
 */
 bool parse_word (const word_t* word, double* end_coords) {
 
-    if(word->key == 'A') { // A-words
+    if(word->key == 'A') // A-words
         end_coords[RTMC_A_AXIS] = word->value;
-    }
-    else if(word->key == 'B') { // B-words
+    
+    else if(word->key == 'B') // B-words
         end_coords[RTMC_B_AXIS] = word->value;
-    }
-    else if(word->key == 'C') { // C-words
+    
+    else if(word->key == 'C') // C-words
         end_coords[RTMC_C_AXIS] = word->value;
-    }
-    else if(word->key == 'F') { // F-words
+    
+    else if(word->key == 'F') // F-words
         feed_rate = word->value;
-    }
+    
     else if(word->key == 'G') { // G-words
-        if(word->value == 0) { // G00 word
+        if(rtmc_is_equal(word->value, 0)) // G00 word
             modal_data.motion_mode = G00;
-        }
-        else if(word->value == 1) { // G01 word
+        
+        else if(rtmc_is_equal(word->value, 1)) // G01 word
             modal_data.motion_mode = G01;
-        }
-        else {
-            // unrecognized value
+        
+        else if(rtmc_is_equal(word->value, 2)) // G02 word
+            modal_data.motion_mode = G02;
+        
+        else if(rtmc_is_equal(word->value, 3)) // G03 word
+            modal_data.motion_mode = G03;
+        
+        else if(rtmc_is_equal(word->value, 17)) // G17 word
+            modal_data.plane_mode = G17;
+        
+        else if(rtmc_is_equal(word->value, 18)) // G18 word
+            modal_data.plane_mode = G18;
+        
+        else if(rtmc_is_equal(word->value, 19)) // G19 word
+            modal_data.plane_mode = G19;
+        
+        else if(rtmc_is_equal(word->value, 90)) // G90 word
+            modal_data.distance_mode = G90;
+        
+        else if(rtmc_is_equal(word->value, 91)) // G91 word
+            modal_data.distance_mode = G91;
+        
+        else // unrecognized value
             return false;
-        }
     }
     else if(word->key == 'P') { // P-words
         // TODO: can also be a parameter
@@ -118,28 +151,27 @@ bool parse_word (const word_t* word, double* end_coords) {
         // TODO: can also be a parameter
         end_coords[RTMC_R_AXIS] = word->value;
     }
-    else if(word->key == 'U') { // U-words
+
+    else if(word->key == 'U') // U-words
         end_coords[RTMC_U_AXIS] = word->value;
-    }
-    else if(word->key == 'V') { // V-words
+    
+    else if(word->key == 'V') // V-words
         end_coords[RTMC_V_AXIS] = word->value;
-    }
-    else if(word->key == 'W') { // W-words
+    
+    else if(word->key == 'W') // W-words
         end_coords[RTMC_W_AXIS] = word->value;
-    }
-    else if(word->key == 'X') { // X-words
+    
+    else if(word->key == 'X') // X-words
         end_coords[RTMC_X_AXIS] = word->value;
-    }
-    else if(word->key == 'Y') { // Y-words
+    
+    else if(word->key == 'Y') // Y-words
         end_coords[RTMC_Y_AXIS] = word->value;
-    }
-    else if(word->key == 'Z') { // Z-words
+    
+    else if(word->key == 'Z') // Z-words
         end_coords[RTMC_Z_AXIS] = word->value;
-    }
-    else {
-        // unrecognized key
+    
+    else // unrecognized key
         return false;
-    }
 
     // no errors found
     return true;
@@ -195,24 +227,16 @@ void generate_path(
     ) {
 
     // set is_path to true by default
-    parsed_block->is_path = true;
+    parsed_block->is_path = false;
 
-    if(modal_data.motion_mode == G00) {
-        parsed_block->path_type = RTMC_POLYNOMIAL;
-        parsed_block->feed_rate = RTMC_RAPID_RATE;
 
-        // set coefficients (polynomial, linear)
-        for(int i = 0; i < RTMC_NUM_AXES; i++) {
-            parsed_block->coefficients[i][0] = 0;
-            parsed_block->coefficients[i][1] = 0;
-            parsed_block->coefficients[i][2] = end_coords[i] - start_coords[i];
-            parsed_block->coefficients[i][3] = start_coords[i];
-        }
-    }
-    else if(modal_data.motion_mode == G01) {
-        if(feed_rate > 0) {
+
+    // handle motion mode (only if start/end coords are different)
+    if(!rtmc_are_vectors_equal(start_coords, end_coords, RTMC_NUM_AXES)) {
+        if(modal_data.motion_mode == G00) {
+            parsed_block->is_path = true;
             parsed_block->path_type = RTMC_POLYNOMIAL;
-            parsed_block->feed_rate = feed_rate;
+            parsed_block->feed_rate = RTMC_RAPID_RATE;
 
             // set coefficients (polynomial, linear)
             for(int i = 0; i < RTMC_NUM_AXES; i++) {
@@ -220,17 +244,41 @@ void generate_path(
                 parsed_block->coefficients[i][1] = 0;
                 parsed_block->coefficients[i][2] = end_coords[i] - start_coords[i];
                 parsed_block->coefficients[i][3] = start_coords[i];
-            }   
+            }
         }
-        else {
-            // invalid feed rate, invalidate the block
-            parsed_block->is_valid = false;
-            parsed_block->error_msg = "Feed rate is zero or negative";
+        else if(modal_data.motion_mode == G01) {
+            if(feed_rate > 0) {
+                parsed_block->is_path = true;
+                parsed_block->path_type = RTMC_POLYNOMIAL;
+                parsed_block->feed_rate = feed_rate;
+
+                // set coefficients (polynomial, linear)
+                for(int i = 0; i < RTMC_NUM_AXES; i++) {
+                    parsed_block->coefficients[i][0] = 0;
+                    parsed_block->coefficients[i][1] = 0;
+                    parsed_block->coefficients[i][2] = end_coords[i] - start_coords[i];
+                    parsed_block->coefficients[i][3] = start_coords[i];
+                }   
+            }
+            else {
+                // invalid feed rate, invalidate the block
+                parsed_block->is_valid = false;
+                parsed_block->error_msg = "Feed rate is zero or negative";
+            }
         }
     }
-    else {
-        // no path is parsed, set is_path to false
-        parsed_block->is_path = false;
+
+
+
+    // handle plane mode
+    if(modal_data.plane_mode == G17) {
+        parsed_block->path_plane = RTMC_XY_PLANE;
+    }
+    else if(modal_data.plane_mode == G18) {
+        parsed_block->path_plane = RTMC_XZ_PLANE;
+    }
+    else if(modal_data.plane_mode == G19) {
+        parsed_block->path_plane = RTMC_YZ_PLANE;
     }
 }
 
