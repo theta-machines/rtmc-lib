@@ -6,7 +6,6 @@
 /*
     Double Comparison Tests
 */
-
 TEST(MathTests, IsEqual_TypicalNumbers) {
     EXPECT_TRUE(rtmc_is_equal(1.0, 1.0));
     EXPECT_TRUE(rtmc_is_equal(-0.0, 0.0));

@@ -1,9 +1,11 @@
 ## Building and Testing
-* Build build files: `cmake -S . -B build`
-* Build library: `cmake --build build`
-* Run tests: `ctest --test-dir build`
+* Building build files: `cmake -S . -B build`
+* Building the library: `cmake --build build`
+* Running tests: `ctest --test-dir build`
 
-If that's too much typing, use the `make.py` script!
+If that's too much typing, have a look at the `make.py` script!
+
+Building creates `build/rtmc_lib.a`.
 
 ## Units
 NOTE: this section only applies internally to the code. Users are free to use

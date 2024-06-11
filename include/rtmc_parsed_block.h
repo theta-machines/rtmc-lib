@@ -73,7 +73,7 @@ typedef struct {
     enum rtmc_plane path_plane;
     double coefficients[RTMC_NUM_AXES][RTMC_NUM_PATH_COEFFICIENTS];
     double position_error;
-    // TODO: implement these (or similar) for canned cycles, macros, etc.
+    // TODO: implement these (or similar) for macros and canned cycles
     // bool is_macro;
     // char macro_key;
     // double macro_value;

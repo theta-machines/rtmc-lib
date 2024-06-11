@@ -76,7 +76,6 @@ TEST(ParseTests, G00) {
 
 /*
     Test G01 (linear) motions
-    TODO: add parsed_block.is_path check
 */
 TEST(ParseTests, G01) {
     rtmc_parsed_block_t parsed_block;

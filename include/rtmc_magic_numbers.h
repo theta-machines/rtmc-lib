@@ -33,7 +33,7 @@ extern "C" {
     Double types are accurate to 15 digits  (+1 sign, +1 decimal, +1 E,
     +1 E sign). Values with more than 19 characters will be truncated.
     
-    For long numbers, "1E-18" instead of "0.000000000000000001".
+    For long numbers, use "1E-18" instead of "0.000000000000000001".
 */
 #define RTMC_MAX_DECIMAL_LENGTH 19
 
