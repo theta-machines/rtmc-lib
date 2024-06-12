@@ -11,6 +11,8 @@ extern "C" {
 
 
 
+#include <stdbool.h>
+
 // common constants
 #define RTMC_PI 3.141592653589793238
 #define RTMC_E 2.718281828459045235
