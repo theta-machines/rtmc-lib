@@ -35,6 +35,9 @@ void rtmc_unit_vector(double* unit_vector, const double* v, int size);
 bool rtmc_are_vectors_equal(const double* v1, const double* v2, int size);
 bool rtmc_is_direction_equal(const double* v1, const double* v2, int size);
 
+// get distance between two points
+double rtmc_distance(const double* p1, const double* p2, int size);
+
 
 
 #ifdef __cplusplus

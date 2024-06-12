@@ -215,3 +215,22 @@ TEST(MathTests, IsDirectionEqual) {
     v2.assign({-1, -2, -3});
     EXPECT_FALSE(rtmc_is_direction_equal(v1.data(), v2.data(), size));
 }
+
+
+
+// test distance between two points
+TEST(MathTests, Distance) {
+    std::vector<double> p1;
+    std::vector<double> p2;
+    double distance;
+
+    p1.assign({3, 10});
+    p2.assign({-17, 100});
+    distance = rtmc_distance(p1.data(), p2.data(), 2);
+    EXPECT_TRUE(rtmc_is_equal(distance, sqrt(8.5e3)));
+
+    p1.assign({1, 2, 3, 4, 5});
+    p2.assign({5, 4, 3, 2, 1});
+    distance = rtmc_distance(p1.data(), p2.data(), 5);
+    EXPECT_TRUE(rtmc_is_equal(distance, 2*sqrt(10)));
+}

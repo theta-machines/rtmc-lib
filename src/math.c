@@ -141,3 +141,16 @@ bool rtmc_is_direction_equal(const double* v1, const double* v2, int size) {
 
     return rtmc_are_vectors_equal(unit_v1, unit_v2, size);
 }
+
+
+
+// get distance between two points
+double rtmc_distance(const double* p1, const double* p2, int size) {
+    double sum_of_squares = 0.0;
+    for(int i = 0; i < size; i++) {
+        // sum_of_squares += pow(v[i], 2);
+        sum_of_squares += pow((p2[i] - p1[i]), 2);
+    }
+
+    return sqrt(sum_of_squares);
+}
