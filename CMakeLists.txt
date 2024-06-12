@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find files
 include_directories(include)
-file(GLOB SOURCES "src/*.c")
+file(GLOB_RECURSE SOURCES "src/*.c")
 file(GLOB TESTS "test/*.cpp")
 
 # Define targets
