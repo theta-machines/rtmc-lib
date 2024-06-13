@@ -92,7 +92,8 @@ extern double feed_rate;
 bool parse_word (
     word_t* word,
     non_modal_data_t* non_modal_data,
-    double* end_coords);
+    double* end_coords
+    );
 
 void generate_path(
     rtmc_parsed_block_t* parsed_block,

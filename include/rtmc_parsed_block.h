@@ -49,14 +49,12 @@ enum rtmc_plane {
 
     position_error
     --------------
-    Some g-code instructions are overconstrained. For example, the "IJK" form
-    of the G02/G03 instructions require setting the center point of the arc
-    and the end point. If the distance from the end point to the center is
-    different than the distance from the start point to the center, then there
-    is no true arc that can be formed. We can't simply throw an error because
-    tiny differences in these lengths might be within the program's tolerance.
-    The solution is to report any discrepancies so that users of this library
-    can determine if the position_error violates their tolerances or not.
+    Some g-code instructions (such as G02 & G03) are overconstrained, meaning
+    that no path can meet all given constraints. In these cases, any
+    discrepancy in the end position is reported.
+
+    position_error is an array representing each axis's error as:
+        position_error[i] = actual_end_position[i] - target_end_position[i]
     
     General Note
     ------------
@@ -72,7 +70,7 @@ typedef struct {
     enum rtmc_path_type path_type;
     enum rtmc_plane path_plane;
     double coefficients[RTMC_NUM_AXES][RTMC_NUM_PATH_COEFFICIENTS];
-    double position_error;
+    double position_error[RTMC_NUM_AXES];
     // TODO: implement these (or similar) for macros and canned cycles
     // bool is_macro;
     // char macro_key;

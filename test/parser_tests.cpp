@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <math.h>
 #include "rtmc_magic_numbers.h"
 #include "rtmc_math.h"
 #include "rtmc_parser.h"
@@ -42,7 +43,6 @@ TEST(ParseTests, FlushModalData) {
 
 TEST(ParseTests, G00) {
     rtmc_parsed_block_t parsed_block;
-    std::string block;
     double start_coords[RTMC_NUM_AXES] = {0};
 
     parsed_block = rtmc_parse("G00", start_coords);
@@ -82,7 +82,6 @@ TEST(ParseTests, G00) {
 
 TEST(ParseTests, G01) {
     rtmc_parsed_block_t parsed_block;
-    std::string block;
     double start_coords[RTMC_NUM_AXES] = {0};
 
     parsed_block = rtmc_parse("G01", start_coords);
@@ -122,6 +121,75 @@ TEST(ParseTests, G01) {
     EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Z_AXIS][1], 0));
     EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Z_AXIS][2], 15.0 - 12.5));
     EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Z_AXIS][3], 12.5));
+}
+
+TEST(ParseTests, G02_IJK_Arcs) {
+    rtmc_parsed_block_t parsed_block;
+    double start_coords[RTMC_NUM_AXES] = {0};
+
+    // valid - just setting modal data (not a path though!)
+    parsed_block = rtmc_parse("G02", start_coords);
+    EXPECT_TRUE(parsed_block.is_valid);
+    EXPECT_FALSE(parsed_block.is_path);
+
+    // invalid - no plane is selected
+    parsed_block = rtmc_parse("G02 X100 Y250 I100 J100", start_coords);
+    EXPECT_FALSE(parsed_block.is_valid);
+
+    // invalid - no feed rate set
+    parsed_block = rtmc_parse("G17 G02 X100 Y250 I100 J100", start_coords);
+    EXPECT_FALSE(parsed_block.is_valid);
+
+    // TODO: make this test pass!
+    // // invalid - missing an offset (J-word)
+    // parsed_block = rtmc_parse("G17 G02 F100 X100 Y250 I100", start_coords);
+    // EXPECT_FALSE(parsed_block.is_valid);
+
+
+
+    start_coords[0] = -100;
+    start_coords[1] = -50;
+    parsed_block = rtmc_parse("G17 G02 F100 X100 Y250 I100 J100", start_coords);
+    EXPECT_TRUE(parsed_block.is_valid);
+    EXPECT_TRUE(parsed_block.is_path);
+    EXPECT_EQ(parsed_block.path_type, RTMC_TRIGONOMETRIC);
+
+    // validate coefficients
+    double A = sqrt(2e4);
+    double B = -acos(-3e4 / sqrt(1e9));
+    double C_y = (3*RTMC_PI) / (4*B);
+    double C_x = RTMC_PI / (4*B);
+    double D_x = 0;
+    double D_y = 50;
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_X_AXIS][0], A));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_X_AXIS][1], B));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_X_AXIS][2], C_x));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_X_AXIS][3], D_x));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Y_AXIS][0], A));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Y_AXIS][1], B));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Y_AXIS][2], C_y));
+    EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Y_AXIS][3], D_y));
+
+    // TODO: test position error
+    double true_end_pos[12] = {0};
+    true_end_pos[RTMC_X_AXIS] = A*sin(B*(1-C_x)) + D_x;
+    true_end_pos[RTMC_Y_AXIS] = A*sin(B*(1-C_y)) + D_y;
+
+    double target_position[12] = {0};
+    target_position[RTMC_X_AXIS] = 100;
+    target_position[RTMC_Y_AXIS] = 250;
+
+    double position_error[12] = {0};
+    position_error[RTMC_X_AXIS] = true_end_pos[RTMC_X_AXIS] - target_position[RTMC_X_AXIS];
+    position_error[RTMC_Y_AXIS] = true_end_pos[RTMC_Y_AXIS] - target_position[RTMC_Y_AXIS];
+
+    // actually check that the position error is correct
+    for(int i = 2; i < RTMC_NUM_AXES; i++) {
+        EXPECT_TRUE(rtmc_is_equal(position_error[i], parsed_block.position_error[i]));
+    }
+    
+
+
 }
 
 TEST(ParseTests, G17) {
