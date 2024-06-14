@@ -40,28 +40,6 @@ Storing values in consistent units keeps the program logic simple, since
 values are only ever converted when stored or retrieved. The alternative would
 be to update every value every time a unit changes. Sounds painful. 
 
-## Current G-Code Coverage
-<table>
-    <tr>
-        <th>Code</th>
-        <th>Function</th>
-        <th>Modal Group</th>
-        <th>Status</th>
-    </tr>
-    <tr>
-        <td>G00</td>
-        <td>Rapid motion</td>
-        <td>Motion</td>
-        <td>Supported</td>
-    </tr>
-    <tr>
-        <td>G01</td>
-        <td>Linear path</td>
-        <td>Motion</td>
-        <td>Supported</td>
-    </tr>
-</table>
-
 ## Limitations
 * Doubles (represented as strings) must be kept ≤ 19 characters. If used
 right, this allows for the maximum precision of the double (15 digits +
