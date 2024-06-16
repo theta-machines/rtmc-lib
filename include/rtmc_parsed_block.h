@@ -30,12 +30,6 @@ enum rtmc_path_type {
     RTMC_HELICAL
 };
 
-enum rtmc_plane {
-    RTMC_XY_PLANE,
-    RTMC_XZ_PLANE,
-    RTMC_YZ_PLANE
-};
-
 /*
     How to interpret this struct:
      * is_valid         indicates if the block was valid g-code
@@ -62,14 +56,12 @@ enum rtmc_plane {
     if is_path == false, then you should ignore feed_rate, path_type, etc. If
     is_valid == false, you should ignore everything except for error_msg.
 */
-// TODO: is path_plane really needed? 
 typedef struct {
     bool is_valid;
     char* error_msg;
     bool is_path;
     double feed_rate;
     enum rtmc_path_type path_type;
-    enum rtmc_plane path_plane;
     double coefficients[RTMC_NUM_AXES][RTMC_NUM_PATH_COEFFICIENTS];
     double position_error[RTMC_NUM_AXES];
     // TODO: implement these (or similar) for macros and canned cycles

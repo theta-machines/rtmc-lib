@@ -65,13 +65,13 @@ bool parse_word (
             return false;
     }
     else if(word->key == 'I')
-        non_modal_data->offset[RTMC_X_AXIS] = word->value;
+        non_modal_data->relative_offset[RTMC_X_AXIS] = word->value;
     
     else if(word->key == 'J')
-        non_modal_data->offset[RTMC_Y_AXIS] = word->value;
+        non_modal_data->relative_offset[RTMC_Y_AXIS] = word->value;
 
     else if(word->key == 'K')
-        non_modal_data->offset[RTMC_Z_AXIS] = word->value;
+        non_modal_data->relative_offset[RTMC_Z_AXIS] = word->value;
         
     else if(word->key == 'P') { // P-words
         // TODO: can also be a parameter

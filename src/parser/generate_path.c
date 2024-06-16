@@ -117,19 +117,16 @@ void generate_path(
                 int axis_1;
                 switch(modal_data.plane_mode) {
                     case G17:
-                        parsed_block->path_plane = RTMC_XY_PLANE;
                         axis_0 = RTMC_X_AXIS;
                         axis_1 = RTMC_Y_AXIS;
                         break;
                     
                     case G18:
-                        parsed_block->path_plane = RTMC_XZ_PLANE;
                         axis_0 = RTMC_X_AXIS;
                         axis_1 = RTMC_Z_AXIS;
                         break;
 
                     case G19:
-                        parsed_block->path_plane = RTMC_YZ_PLANE;
                         axis_0 = RTMC_Y_AXIS;
                         axis_1 = RTMC_Z_AXIS;
                         break;
@@ -143,8 +140,8 @@ void generate_path(
                 start_point[1] = start_coords[axis_1];
                 end_point[0] = end_coords[axis_0];
                 end_point[1] = end_coords[axis_1];
-                offset_point[0] = start_point[0] + non_modal_data.offset[axis_0];
-                offset_point[1] = start_point[1] + non_modal_data.offset[axis_1];
+                offset_point[0] = start_point[0] + non_modal_data.relative_offset[axis_0];
+                offset_point[1] = start_point[1] + non_modal_data.relative_offset[axis_1];
 
                 // more error handling (check if offset_point is valid)
                 if(rtmc_are_vectors_equal(offset_point, start_point, 2)) {
@@ -215,18 +212,5 @@ void generate_path(
                 }
             }
         }
-    }
-
-
-
-    // handle plane mode
-    if(modal_data.plane_mode == G17) {
-        parsed_block->path_plane = RTMC_XY_PLANE;
-    }
-    else if(modal_data.plane_mode == G18) {
-        parsed_block->path_plane = RTMC_XZ_PLANE;
-    }
-    else if(modal_data.plane_mode == G19) {
-        parsed_block->path_plane = RTMC_YZ_PLANE;
     }
 }

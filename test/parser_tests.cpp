@@ -200,19 +200,16 @@ TEST(ParseTests, G17) {
     // change plane back
     parsed_block = rtmc_parse("G17", start_coords);
     EXPECT_TRUE(parsed_block.is_valid);
-    EXPECT_EQ(parsed_block.path_plane, RTMC_XY_PLANE);
 }
 
 TEST(ParseTests, G18) {
     double start_coords[RTMC_NUM_AXES] = {0};
     rtmc_parsed_block_t parsed_block = rtmc_parse("G18", start_coords);
     EXPECT_TRUE(parsed_block.is_valid);
-    EXPECT_EQ(parsed_block.path_plane, RTMC_XZ_PLANE);
 }
 
 TEST(ParseTests, G19) {
     double start_coords[RTMC_NUM_AXES] = {0};
     rtmc_parsed_block_t parsed_block = rtmc_parse("G19", start_coords);
     EXPECT_TRUE(parsed_block.is_valid);
-    EXPECT_EQ(parsed_block.path_plane, RTMC_YZ_PLANE);
 }
