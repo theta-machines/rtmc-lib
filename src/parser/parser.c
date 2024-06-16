@@ -125,7 +125,7 @@ rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
     rtmc_parsed_block_t parsed_block;
 
     // non-modal data related to the block
-    non_modal_data_t non_modal_data;
+    non_modal_data_t non_modal_data = {UNDEFINED_NON_MODAL_MODE, {0}};
 
     // g-code word (key/value pair)
     word_t word;
@@ -166,6 +166,9 @@ rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
             word.key = toupper(c);
         }
         else if(state == VALUE_STATE) {
+            // TODO: should throw error if max length is reached to avoid
+            // errors if the exponent gets truncated
+
             // build `value_str` until max length is reached
             if(value_str_index < RTMC_MAX_DECIMAL_LENGTH) {
                 value_str[value_str_index++] = c;

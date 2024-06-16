@@ -123,7 +123,7 @@ TEST(ParseTests, G01) {
     EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Z_AXIS][3], 12.5));
 }
 
-TEST(ParseTests, G02_IJK_Arcs) {
+TEST(ParseTests, G02_IJK_Arcs_Invalid) {
     rtmc_parsed_block_t parsed_block;
     double start_coords[RTMC_NUM_AXES] = {0};
 
@@ -140,13 +140,15 @@ TEST(ParseTests, G02_IJK_Arcs) {
     parsed_block = rtmc_parse("G17 G02 X100 Y250 I100 J100", start_coords);
     EXPECT_FALSE(parsed_block.is_valid);
 
-    // TODO: make this test pass!
-    // // invalid - missing an offset (J-word)
-    // parsed_block = rtmc_parse("G17 G02 F100 X100 Y250 I100", start_coords);
-    // EXPECT_FALSE(parsed_block.is_valid);
+    // invalid - missing an offset (I and J words)
+    parsed_block = rtmc_parse("G17 G02 F100 X100 Y250", start_coords);
+    EXPECT_FALSE(parsed_block.is_valid);
+}
 
-
-
+TEST(ParseTests, G02_IJK_Arcs_Coefficients) {
+    rtmc_parsed_block_t parsed_block;
+    double start_coords[RTMC_NUM_AXES] = {0};
+    
     start_coords[0] = -100;
     start_coords[1] = -50;
     parsed_block = rtmc_parse("G17 G02 F100 X100 Y250 I100 J100", start_coords);
@@ -154,7 +156,6 @@ TEST(ParseTests, G02_IJK_Arcs) {
     EXPECT_TRUE(parsed_block.is_path);
     EXPECT_EQ(parsed_block.path_type, RTMC_TRIGONOMETRIC);
 
-    // validate coefficients
     double A = sqrt(2e4);
     double B = -acos(-3e4 / sqrt(1e9));
     double C_y = (3*RTMC_PI) / (4*B);
@@ -170,7 +171,6 @@ TEST(ParseTests, G02_IJK_Arcs) {
     EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Y_AXIS][2], C_y));
     EXPECT_TRUE(rtmc_is_equal(parsed_block.coefficients[RTMC_Y_AXIS][3], D_y));
 
-    // TODO: test position error
     double true_end_pos[12] = {0};
     true_end_pos[RTMC_X_AXIS] = A*sin(B*(1-C_x)) + D_x;
     true_end_pos[RTMC_Y_AXIS] = A*sin(B*(1-C_y)) + D_y;
@@ -187,9 +187,6 @@ TEST(ParseTests, G02_IJK_Arcs) {
     for(int i = 2; i < RTMC_NUM_AXES; i++) {
         EXPECT_TRUE(rtmc_is_equal(position_error[i], parsed_block.position_error[i]));
     }
-    
-
-
 }
 
 TEST(ParseTests, G17) {

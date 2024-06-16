@@ -71,6 +71,7 @@ typedef struct {
 } modal_data_t;
 
 // this struct groups all non-modal data together for use within the parser
+// TODO: rename to relative_offset
 typedef struct {
     non_modal_mode_t mode;
     double offset[3];

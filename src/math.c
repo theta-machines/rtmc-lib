@@ -156,6 +156,7 @@ double rtmc_distance(const double* p1, const double* p2, int size) {
 }
 
 
+
 // return sign of number (and handle NaN)
 double rtmc_sign(double x) {
     if(x != x)

@@ -62,6 +62,7 @@ enum rtmc_plane {
     if is_path == false, then you should ignore feed_rate, path_type, etc. If
     is_valid == false, you should ignore everything except for error_msg.
 */
+// TODO: is path_plane really needed? 
 typedef struct {
     bool is_valid;
     char* error_msg;
