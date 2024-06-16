@@ -40,6 +40,9 @@ bool rtmc_is_direction_equal(const double* v1, const double* v2, int size);
 // get distance between two points
 double rtmc_distance(const double* p1, const double* p2, int size);
 
+// sign function (returns 1 when x >= 0; -1 when x < 0)
+double rtmc_sign(double x);
+
 
 
 #ifdef __cplusplus

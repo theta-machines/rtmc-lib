@@ -234,3 +234,17 @@ TEST(MathTests, Distance) {
     distance = rtmc_distance(p1.data(), p2.data(), 5);
     EXPECT_TRUE(rtmc_is_equal(distance, 2*sqrt(10)));
 }
+
+
+
+// test sign function
+TEST(MathTests, Sign) {
+    EXPECT_EQ(rtmc_sign(5), 1);
+    EXPECT_EQ(rtmc_sign(-5), -1);
+    EXPECT_EQ(rtmc_sign(INFINITY), 1);
+    EXPECT_EQ(rtmc_sign(-INFINITY), -1);
+
+    // check that sign(NAN) returns NAN
+    double sign = rtmc_sign(NAN);
+    EXPECT_NE(sign, sign);
+}

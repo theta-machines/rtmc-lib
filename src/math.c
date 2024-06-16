@@ -154,3 +154,12 @@ double rtmc_distance(const double* p1, const double* p2, int size) {
 
     return sqrt(sum_of_squares);
 }
+
+
+// return sign of number (and handle NaN)
+double rtmc_sign(double x) {
+    if(x != x)
+        return NAN;
+    else
+        return (rtmc_is_greater_equal(x, 0)) ? 1 : -1;
+}
