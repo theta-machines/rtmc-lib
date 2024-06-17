@@ -26,6 +26,14 @@ TEST(ParseTests, IllegalWords) {
     EXPECT_FALSE(rtmc_parse("O1", start_coords).is_valid);
 }
 
+TEST(ParseTests, ValueTooLong) {
+    rtmc_parsed_block_t parsed_block;
+    double start_coords[RTMC_NUM_AXES] = {0};
+
+    parsed_block = rtmc_parse("G0 X-1.4273956103948e-13", start_coords);
+    EXPECT_FALSE(parsed_block.is_valid);
+}
+
 TEST(ParseTests, FlushModalData) {
     rtmc_parsed_block_t parsed_block;
     double start_coords[RTMC_NUM_AXES] = {0};
@@ -254,6 +262,8 @@ TEST(ParseTests, G03_IJK_Arcs_Coefficients) {
         EXPECT_TRUE(rtmc_is_equal(position_error[i], parsed_block.position_error[i]));
     }
 }
+
+// TODO: test G02/G03 with other planes (G18 and G19)
 
 TEST(ParseTests, G17) {
     // XY plane is default, so a different plane must be selected first

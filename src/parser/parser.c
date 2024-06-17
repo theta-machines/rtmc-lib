@@ -166,12 +166,15 @@ rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
             word.key = toupper(c);
         }
         else if(state == VALUE_STATE) {
-            // TODO: should throw error if max length is reached to avoid
-            // errors if the exponent gets truncated
-
             // build `value_str` until max length is reached
             if(value_str_index < RTMC_MAX_DECIMAL_LENGTH) {
                 value_str[value_str_index++] = c;
+            }
+            else {
+                // max value length has been exceeded
+                // might truncate an exponent, so throw an error
+                parsed_block.is_valid = false;
+                parsed_block.error_msg = "Decimal value exceeded max length";
             }
         }
         else if(state == PARSE_STATE) {
