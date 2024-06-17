@@ -135,10 +135,9 @@ TEST(ParseTests, G02_IJK_Arcs_Syntax) {
     rtmc_parsed_block_t parsed_block;
     double start_coords[RTMC_NUM_AXES] = {0};
 
-    // valid - just setting modal data (not a path though!)
+    // invalid - needs complimentary parameters
     parsed_block = rtmc_parse("G02", start_coords);
-    EXPECT_TRUE(parsed_block.is_valid);
-    EXPECT_FALSE(parsed_block.is_path);
+    EXPECT_FALSE(parsed_block.is_valid);
 
     // invalid - no plane is selected
     parsed_block = rtmc_parse("G02 X100 Y250 I100 J100", start_coords);
@@ -201,10 +200,9 @@ TEST(ParseTests, G03_IJK_Arcs_Syntax) {
     rtmc_parsed_block_t parsed_block;
     double start_coords[RTMC_NUM_AXES] = {0};
 
-    // valid - just setting modal data (not a path though!)
+    // invalid - needs complimentary parameters
     parsed_block = rtmc_parse("G03", start_coords);
-    EXPECT_TRUE(parsed_block.is_valid);
-    EXPECT_FALSE(parsed_block.is_path);
+    EXPECT_FALSE(parsed_block.is_valid);
 
     // invalid - no plane is selected
     parsed_block = rtmc_parse("G03 X100 Y250 I100 J100", start_coords);
