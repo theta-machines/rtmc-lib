@@ -116,15 +116,19 @@ $$
 $$
 B =
 \begin{cases}
-    B_{base}-2\pi & \text{CW \& }B_{sign}\ge0\ \\
-    -B_{base} & \text{CW \& }B_{sign}<0 \\
-    B_{base} & \text{CCW \& }B_{sign}\ge0\ \\
-    2\pi-B_{base} & \text{CCW \& }B_{sign}<0 \\
+    B_{base}-2\pi & \text{CW and }B_{sign}\ge0\ \\
+    -B_{base} & \text{CW and }B_{sign}<0 \\
+    B_{base} & \text{CCW and }B_{sign}>0\ \\
+    2\pi-B_{base} & \text{CCW and }B_{sign}\le0 \\
 \end{cases}
 $$
 
 $$
-C_y = \frac{1}{B}\arccos\left(\frac{x_{0}-D_{x}}{A}\right)\text{sign}\left(D_y-y_0\right)
+C_y =
+\begin{cases}
+    \frac{1}{B}\arccos\left(\frac{x_{0}-D_{x}}{A}\right) & D_y-y_0\ge0 \\
+    -\frac{1}{B}\arccos\left(\frac{x_{0}-D_{x}}{A}\right) & D_y-y_0<0
+\end{cases}
 $$
 
 $$
