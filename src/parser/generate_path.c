@@ -182,10 +182,10 @@ void generate_path(
                             ? B_base
                             : (2 * RTMC_PI) - B_base;
                     }
-                    double C_y = (
-                        (1.0/B)*acos((start_point[0]-offset_point[0])/A) *
-                        rtmc_sign(offset_point[1] - start_point[1])
-                    );
+                    double C_base = (1.0/B)*acos((start_point[0]-offset_point[0])/A);
+                    double C_y = (offset_point[1] - start_point[1] >= 0)
+                        ? C_base
+                        : -C_base;
                     double C_x = C_y - (RTMC_PI / (2*B));
                     double D_x = offset_point[0];
                     double D_y = offset_point[1];
