@@ -241,6 +241,7 @@ TEST(MathTests, Distance) {
 TEST(MathTests, Sign) {
     EXPECT_EQ(rtmc_sign(5), 1);
     EXPECT_EQ(rtmc_sign(-5), -1);
+    EXPECT_EQ(rtmc_sign(0), 0);
     EXPECT_EQ(rtmc_sign(INFINITY), 1);
     EXPECT_EQ(rtmc_sign(-INFINITY), -1);
 

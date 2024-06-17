@@ -161,6 +161,8 @@ double rtmc_distance(const double* p1, const double* p2, int size) {
 double rtmc_sign(double x) {
     if(x != x)
         return NAN;
+    else if(rtmc_is_equal(x, 0))
+        return 0;
     else
-        return (rtmc_is_greater_equal(x, 0)) ? 1 : -1;
+        return (x > 0) ? 1 : -1;
 }
