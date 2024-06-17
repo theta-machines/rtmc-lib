@@ -179,7 +179,7 @@ void generate_path(
                         : -B_base;
                 }
                 else {
-                    B = (rtmc_is_greater_equal(B_sign, 0))
+                    B = (rtmc_is_greater(B_sign, 0))
                         ? B_base
                         : (2 * RTMC_PI) - B_base;
                 }
