@@ -14,20 +14,39 @@ TEST(MathTests, IsEqual_TypicalNumbers) {
     EXPECT_FALSE(rtmc_is_equal(2.0, 1.0));
 }
 
+TEST(MathTests, IsEqual_Subtraction) {
+    // This exact problem broke the comparison in a previous version
+    EXPECT_TRUE(rtmc_is_equal(100.1 - 100, 0.1));
+}
+
 TEST(MathTests, IsEqual_ThresholdBoundaries) {
+    double difference;
+
     // barely within threshold
-    double difference = 99 * DBL_MIN;
+    difference = 19999 * DBL_EPSILON;
     EXPECT_TRUE(rtmc_is_equal(1.0, 1.0 + difference));
     EXPECT_TRUE(rtmc_is_equal(1.0, 1.0 - difference));
     EXPECT_TRUE(rtmc_is_equal(1.0 + difference, 1.0));
     EXPECT_TRUE(rtmc_is_equal(1.0 - difference, 1.0));
 
+    difference = 9999 * DBL_MIN;
+    EXPECT_TRUE(rtmc_is_equal(1e-304, 1e-304 + difference));
+    EXPECT_TRUE(rtmc_is_equal(1e-304, 1e-304 - difference));
+    EXPECT_TRUE(rtmc_is_equal(1e-304 + difference, 1e-304));
+    EXPECT_TRUE(rtmc_is_equal(1e-304 - difference, 1e-304));
+
     // barely outside of threshold
-    difference = 201 * DBL_EPSILON;
+    difference = 20001 * DBL_EPSILON;
     EXPECT_FALSE(rtmc_is_equal(1.0, 1.0 + difference));
     EXPECT_FALSE(rtmc_is_equal(1.0, 1.0 - difference));
     EXPECT_FALSE(rtmc_is_equal(1.0 + difference, 1.0));
     EXPECT_FALSE(rtmc_is_equal(1.0 - difference, 1.0));
+
+    difference = 10001 * DBL_MIN;
+    EXPECT_FALSE(rtmc_is_equal(1e-304, 1e-304 + difference));
+    EXPECT_FALSE(rtmc_is_equal(1e-304, 1e-304 - difference));
+    EXPECT_FALSE(rtmc_is_equal(1e-304 + difference, 1e-304));
+    EXPECT_FALSE(rtmc_is_equal(1e-304 - difference, 1e-304));
 }
 
 TEST(MathTests, IsEqual_ExtremeNumbers) {

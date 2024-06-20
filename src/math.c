@@ -25,8 +25,8 @@
     To help make this clear, see the following Desmos plot:
     https://www.desmos.com/calculator/cckwruv1oy
 */
-#define EPSILON 100 * DBL_EPSILON // about 2.22e-14
-#define SMALL_THRESHOLD 100 * DBL_MIN // about 2.23e-306
+#define EPSILON (1e4 * DBL_EPSILON) // about 2.22e-12
+#define SMALL_THRESHOLD (1e4 * DBL_MIN) // about 2.23e-304
 
 bool rtmc_is_equal(double a, double b) {
     // trivial case (also handles +/- INFINITY)
