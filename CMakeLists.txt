@@ -13,6 +13,14 @@ project(rtmc_lib)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# Set C compiler flags
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_C_FLAGS "-Wenum-conversion -Werror")
+else()
+    # TODO: support other compilers
+    message(WARNING "Compiler flags only supported by GCC. Your compiler: ${CMAKE_C_COMPILER_ID}")
+endif()
+
 # Set C++ standard
 # (GoogleTest requires C++14 or later)
 set(CMAKE_CXX_STANDARD 14)
