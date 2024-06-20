@@ -4,6 +4,7 @@
 
 #include "parser.h"
 #include "rtmc_math.h"
+#include "rtmc_parser.h"
 
 /*
     Parse the key/value pairs (a.k.a., words) and update the modal data
@@ -15,20 +16,16 @@
     `modal_data`, `feed_rate`, and `end_coords` are all passed by reference
     and can be modified by this function.
 */
-bool parse_word (
-    word_t* word,
-    non_modal_data_t* non_modal_data,
-    double* end_coords
-    ) {
+bool parse_word(word_t* word) {
 
     if(word->key == 'A') // A-words
-        end_coords[RTMC_A_AXIS] = word->value;
+        modal_data.end_coords[RTMC_A_AXIS] = word->value;
     
     else if(word->key == 'B') // B-words
-        end_coords[RTMC_B_AXIS] = word->value;
+        modal_data.end_coords[RTMC_B_AXIS] = word->value;
     
     else if(word->key == 'C') // C-words
-        end_coords[RTMC_C_AXIS] = word->value;
+        modal_data.end_coords[RTMC_C_AXIS] = word->value;
     
     else if(word->key == 'F') // F-words
         feed_rate = word->value;
@@ -65,45 +62,45 @@ bool parse_word (
             return false;
     }
     else if(word->key == 'I')
-        non_modal_data->relative_offset[RTMC_X_AXIS] = word->value;
+        non_modal_data.relative_offset[RTMC_X_AXIS] = word->value;
     
     else if(word->key == 'J')
-        non_modal_data->relative_offset[RTMC_Y_AXIS] = word->value;
+        non_modal_data.relative_offset[RTMC_Y_AXIS] = word->value;
 
     else if(word->key == 'K')
-        non_modal_data->relative_offset[RTMC_Z_AXIS] = word->value;
+        non_modal_data.relative_offset[RTMC_Z_AXIS] = word->value;
         
     else if(word->key == 'P') { // P-words
         // TODO: can also be a parameter
         // use if(modal_data.motion_mode == SOMETHING) to determine behavior
-        end_coords[RTMC_P_AXIS] = word->value;
+        modal_data.end_coords[RTMC_P_AXIS] = word->value;
     }
     else if(word->key == 'Q') { // Q-words
         // TODO: can also be a parameter
-        end_coords[RTMC_Q_AXIS] = word->value;
+        modal_data.end_coords[RTMC_Q_AXIS] = word->value;
     }
     else if(word->key == 'R') { // R-words
         // TODO: can also be a parameter
-        end_coords[RTMC_R_AXIS] = word->value;
+        modal_data.end_coords[RTMC_R_AXIS] = word->value;
     }
 
     else if(word->key == 'U') // U-words
-        end_coords[RTMC_U_AXIS] = word->value;
+        modal_data.end_coords[RTMC_U_AXIS] = word->value;
     
     else if(word->key == 'V') // V-words
-        end_coords[RTMC_V_AXIS] = word->value;
+        modal_data.end_coords[RTMC_V_AXIS] = word->value;
     
     else if(word->key == 'W') // W-words
-        end_coords[RTMC_W_AXIS] = word->value;
+        modal_data.end_coords[RTMC_W_AXIS] = word->value;
     
     else if(word->key == 'X') // X-words
-        end_coords[RTMC_X_AXIS] = word->value;
+        modal_data.end_coords[RTMC_X_AXIS] = word->value;
     
     else if(word->key == 'Y') // Y-words
-        end_coords[RTMC_Y_AXIS] = word->value;
+        modal_data.end_coords[RTMC_Y_AXIS] = word->value;
     
     else if(word->key == 'Z') // Z-words
-        end_coords[RTMC_Z_AXIS] = word->value;
+        modal_data.end_coords[RTMC_Z_AXIS] = word->value;
     
     else // unrecognized key
         return false;

@@ -47,6 +47,18 @@ extern "C" {
 
 
 
+/*
+    Define the 12 axis IDs (0-11)
+*/
+enum rtmc_axes {
+    RTMC_X_AXIS, RTMC_Y_AXIS, RTMC_Z_AXIS,
+    RTMC_U_AXIS, RTMC_V_AXIS, RTMC_W_AXIS,
+    RTMC_P_AXIS, RTMC_Q_AXIS, RTMC_R_AXIS,
+    RTMC_A_AXIS, RTMC_B_AXIS, RTMC_C_AXIS
+};
+
+
+
 #ifdef __cplusplus
 }
 #endif

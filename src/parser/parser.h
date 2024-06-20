@@ -8,7 +8,7 @@
     These files and their purposes are described below.
      * parser.c --------- functions from `rtmc_parser.h` and FSM logic
      * parse_word.c ----- parse key/value pairs and update modal data
-     * generate_path.c -- generates the pre-interpolated path
+     * generate_path.c -- generates the joint-space path
 */
 
 #ifndef PARSER_H
@@ -17,15 +17,8 @@
 
 
 #include <stdbool.h>
-#include "rtmc_parsed_block.h"
-
-// holds a g-code word as key/value pair
-typedef struct {
-    char key;
-    double value;
-} word_t;
-
-
+#include "rtmc_parser.h"
+#include "rtmc_path.h"
 
 /*
     Below contains an enum for each modal group.
@@ -43,36 +36,38 @@ typedef struct {
     erroneous values being assigned to the modal group enums.
 */
 
-typedef enum {
+enum motion_mode {
     UNDEFINED_MOTION_MODE,
     G00, G01, G02, G03
-} motion_mode_t;
+};
 
-typedef enum {
+enum plane_mode {
     UNDEFINED_PLANE_MODE,
     G17, G18, G19
-} plane_mode_t;
+};
 
-typedef enum {
+enum distance_mode {
     UNDEFINED_DISTANCE_MODE,
     G90, G91
-} distance_mode_t;
+};
 
-typedef enum {
+enum non_modal_mode {
     UNDEFINED_NON_MODAL_MODE,
     G04
-} non_modal_mode_t;
+};
 
 // this struct groups the modal data together for use within the parser
 typedef struct {
-    motion_mode_t motion_mode;
-    plane_mode_t plane_mode;
-    distance_mode_t distance_mode;
+    enum motion_mode motion_mode;
+    enum plane_mode plane_mode;
+    enum distance_mode distance_mode;
+    double start_coords[RTMC_NUM_AXES];
+    double end_coords[RTMC_NUM_AXES];
 } modal_data_t;
 
 // this struct groups all non-modal data together for use within the parser
 typedef struct {
-    non_modal_mode_t mode;
+    enum non_modal_mode mode;
     double relative_offset[3];
 } non_modal_data_t;
 
@@ -82,25 +77,29 @@ typedef struct {
     Global modal data
 */
 extern modal_data_t modal_data;
+extern non_modal_data_t non_modal_data;
 extern double feed_rate;
+
+
+
+/*
+    Holds a g-code word as key/value pair
+*/
+typedef struct {
+    char key;
+    double value;
+} word_t;
 
 
 
 /*
     Private interface
 */
-bool parse_word (
-    word_t* word,
-    non_modal_data_t* non_modal_data,
-    double* end_coords
-    );
+// return false when for invalid words; otherwise assigns key/value to `word`
+bool parse_word(word_t* word);
 
-void generate_path(
-    rtmc_parsed_block_t* parsed_block,
-    const double* start_coords,
-    const double* end_coords,
-    const non_modal_data_t non_modal_data
-    );
+// builds the `path` and `parsed_block`
+void generate_path(rtmc_path_t* path, rtmc_parsed_block_t* parsed_block);
 
 
 

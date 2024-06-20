@@ -7,8 +7,9 @@
 #include "parser.h"
 #include "rtmc_parser.h"
 
-// global modal data
-modal_data_t modal_data;
+// global variables (modal data)
+modal_data_t modal_data = {.start_coords = {0}, .end_coords = {0}};
+non_modal_data_t non_modal_data;
 double feed_rate = 0;
 
 
@@ -120,9 +121,12 @@ state_t get_next_state(state_t current_state, char c) {
     `parsed_block` argument. Strings must be properly terminated with the
     null character ('\0').
 */
-rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
+rtmc_parsed_block_t rtmc_parse(rtmc_path_queue_t* queue, const char* block) {
     // object to be returned
     rtmc_parsed_block_t parsed_block;
+
+    // object to enqueue
+    rtmc_path_t path;
 
     // non-modal data related to the block
     non_modal_data_t non_modal_data = {UNDEFINED_NON_MODAL_MODE, {0}};
@@ -139,12 +143,6 @@ rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
 
     // make path valid by default
     parsed_block.is_valid = true;
-
-    // initialize end coordinates
-    double end_coords[RTMC_NUM_AXES];
-    for(int i = 0; i < RTMC_NUM_AXES; i++) {
-        end_coords[i] = start_coords[i];
-    }
 
     // loop until the end of the line, counting number of iterations
     bool end_of_line = false;
@@ -190,7 +188,7 @@ rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
             word.value = strtod(value_str, NULL); // TODO: strtod() could use error handling
 
             // update modal data based on new g-code word (key/value pair)
-            bool valid_word = parse_word(&word, &non_modal_data, end_coords);
+            bool valid_word = parse_word(&word);
             if(!valid_word) {
                 // flag error and stop parsing
                 parsed_block.is_valid = false;
@@ -210,7 +208,7 @@ rtmc_parsed_block_t rtmc_parse(const char* block, const double* start_coords) {
 
     // if parsing was successful, generate the path
     if(parsed_block.is_valid) {
-        generate_path(&parsed_block, start_coords, end_coords, non_modal_data);
+        generate_path(&path, &parsed_block);
     }
 
     return parsed_block;

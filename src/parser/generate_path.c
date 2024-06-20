@@ -5,6 +5,7 @@
 #include <math.h>
 #include "parser.h"
 #include "rtmc_math.h"
+#include "rtmc_parser.h"
 
 
 
@@ -45,51 +46,40 @@
     X and Y axes would be trigonometric-type (moving together in a circle).
 */
 
-void set_line_coefficients (
-    rtmc_parsed_block_t* parsed_block,
-    const double* start_coords,
-    const double* end_coords
-    ) {
+void set_line_coefficients(rtmc_path_t* path) {
     for(int i = 0; i < RTMC_NUM_AXES; i++) {
-        parsed_block->coefficients[i][0] = 0;
-        parsed_block->coefficients[i][1] = 0;
-        parsed_block->coefficients[i][2] = end_coords[i] - start_coords[i];
-        parsed_block->coefficients[i][3] = start_coords[i];
+        path->coefficients[i][0] = 0;
+        path->coefficients[i][1] = 0;
+        path->coefficients[i][2] = modal_data.end_coords[i] - modal_data.start_coords[i];
+        path->coefficients[i][3] = modal_data.start_coords[i];
     }
 }
 
 
 
-void generate_path(
-    rtmc_parsed_block_t* parsed_block,
-    const double* start_coords,
-    const double* end_coords,
-    const non_modal_data_t non_modal_data
-    ) {
+void generate_path(rtmc_path_t* path, rtmc_parsed_block_t* parsed_block) {
 
-    // set is_path to false by default
-    parsed_block->is_path = false;
+    // set type to modal data by default
+    parsed_block->block_type = RTMC_MODAL;
 
     // handle motion mode (only if start/end coords are different)
     // TODO: this if statement only applies to arcs, not full circles!!
     //  (because start == end for full circles)
-    if(!rtmc_are_vectors_equal(start_coords, end_coords, RTMC_NUM_AXES)) {
+    if(!rtmc_are_vectors_equal(modal_data.start_coords, modal_data.end_coords, RTMC_NUM_AXES)) {
 
         // Rapid linear interpolation
         if(modal_data.motion_mode == G00) {
-            parsed_block->is_path = true;
-            parsed_block->path_type = RTMC_POLYNOMIAL;
-            parsed_block->feed_rate = RTMC_RAPID_RATE;
-            set_line_coefficients (parsed_block, start_coords, end_coords);
+            parsed_block->block_type = RTMC_POLYNOMIAL;
+            path->feed_rate = RTMC_RAPID_RATE;
+            set_line_coefficients(path);
         }
 
         // Linear interpolation
         else if(modal_data.motion_mode == G01) {
             if(rtmc_is_greater(feed_rate, 0)) {
-                parsed_block->is_path = true;
-                parsed_block->path_type = RTMC_POLYNOMIAL;
-                parsed_block->feed_rate = feed_rate;
-                set_line_coefficients(parsed_block, start_coords, end_coords);
+                parsed_block->block_type = RTMC_POLYNOMIAL;
+                path->feed_rate = feed_rate;
+                set_line_coefficients(path);
             }
             else {
                 // invalid feed rate, invalidate the block
@@ -137,10 +127,10 @@ void generate_path(
             double start_point[2];
             double end_point[2];
             double offset_point[2];
-            start_point[0] = start_coords[axis_0];
-            start_point[1] = start_coords[axis_1];
-            end_point[0] = end_coords[axis_0];
-            end_point[1] = end_coords[axis_1];
+            start_point[0] = modal_data.start_coords[axis_0];
+            start_point[1] = modal_data.start_coords[axis_1];
+            end_point[0] = modal_data.end_coords[axis_0];
+            end_point[1] = modal_data.end_coords[axis_1];
             offset_point[0] = start_point[0] + non_modal_data.relative_offset[axis_0];
             offset_point[1] = start_point[1] + non_modal_data.relative_offset[axis_1];
 
@@ -155,9 +145,8 @@ void generate_path(
             }
             else {
                 // set basic path data
-                parsed_block->is_path = true;
-                parsed_block->path_type = RTMC_TRIGONOMETRIC;
-                parsed_block->feed_rate = feed_rate;
+                parsed_block->block_type = RTMC_TRIGONOMETRIC;
+                path->feed_rate = feed_rate;
 
                 bool is_clockwise = (modal_data.motion_mode == G02);
 
@@ -192,15 +181,15 @@ void generate_path(
                 double D_y = offset_point[1];
 
                 // set the coefficients
-                parsed_block->coefficients[axis_0][0] = A;
-                parsed_block->coefficients[axis_0][1] = B;
-                parsed_block->coefficients[axis_0][2] = C_x;
-                parsed_block->coefficients[axis_0][3] = D_x;
+                path->coefficients[axis_0][0] = A;
+                path->coefficients[axis_0][1] = B;
+                path->coefficients[axis_0][2] = C_x;
+                path->coefficients[axis_0][3] = D_x;
 
-                parsed_block->coefficients[axis_1][0] = A;
-                parsed_block->coefficients[axis_1][1] = B;
-                parsed_block->coefficients[axis_1][2] = C_y;
-                parsed_block->coefficients[axis_1][3] = D_y;
+                path->coefficients[axis_1][0] = A;
+                path->coefficients[axis_1][1] = B;
+                path->coefficients[axis_1][2] = C_y;
+                path->coefficients[axis_1][3] = D_y;
                 
                 // find position_error
                 // Note: `end_coords` represents the target position
@@ -208,7 +197,7 @@ void generate_path(
                 actual_end_coords[axis_0] = A*sin(B*(1-C_x)) + D_x;
                 actual_end_coords[axis_1] = A*sin(B*(1-C_y)) + D_y;
                 for(int i = 0; i < RTMC_NUM_AXES; i++) {
-                    parsed_block->position_error[i] = actual_end_coords[i] - end_coords[i];
+                    parsed_block->position_error[i] = actual_end_coords[i] - modal_data.end_coords[i];
                 }
             }
         }
