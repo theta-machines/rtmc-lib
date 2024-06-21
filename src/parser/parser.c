@@ -8,9 +8,11 @@
 #include "rtmc_parser.h"
 
 // global variables (modal data)
-modal_data_t modal_data = {.start_coords = {0}, .end_coords = {0}};
+modal_data_t modal_data;
 non_modal_data_t non_modal_data;
 double feed_rate = 0;
+double start_coords[RTMC_NUM_AXES] = {0};
+double end_coords[RTMC_NUM_AXES] = {0};
 
 
 
@@ -128,9 +130,6 @@ rtmc_parsed_block_t rtmc_parse(rtmc_path_queue_t* queue, const char* block) {
     // object to enqueue
     rtmc_path_t path;
 
-    // non-modal data related to the block
-    non_modal_data_t non_modal_data = {UNDEFINED_NON_MODAL_MODE, {0}};
-
     // g-code word (key/value pair)
     word_t word;
 
@@ -143,6 +142,16 @@ rtmc_parsed_block_t rtmc_parse(rtmc_path_queue_t* queue, const char* block) {
 
     // make path valid by default
     parsed_block.is_valid = true;
+
+    // reset non-modal data
+    non_modal_data.mode = UNDEFINED_NON_MODAL_MODE;
+    for(int i = 0; i < NUM_RELATIVE_OFFSETS; i++)
+        non_modal_data.relative_offset[i] = 0;
+
+    // initialize start coordinates (to previous end coordinates)
+    for(int i = 0; i < RTMC_NUM_AXES; i++) {
+        start_coords[i] = end_coords[i];
+    }
 
     // loop until the end of the line, counting number of iterations
     bool end_of_line = false;
@@ -211,18 +220,29 @@ rtmc_parsed_block_t rtmc_parse(rtmc_path_queue_t* queue, const char* block) {
         generate_path(&path, &parsed_block);
     }
 
+    // if the block is a path, enqueue it
+    if(parsed_block.type == RTMC_BLOCK_TYPE_PATH) {
+        rtmc_path_enqueue(queue, path);
+    }
+
     return parsed_block;
 }
 
 
 
 /*
-    A g-code block's meaning depends on modal data set by previous g-code 
-    blocks. This function clears that data.
+    A g-code block's meaning depends on previous g-code  blocks.
+    This function clears that data.
 */
-void rtmc_flush_modal_data() {
+void rtmc_flush_parser_data() {
     feed_rate = 0;
+
     modal_data.motion_mode = UNDEFINED_MOTION_MODE;
     modal_data.plane_mode = UNDEFINED_PLANE_MODE;
     modal_data.distance_mode = UNDEFINED_DISTANCE_MODE;
+    
+    for(int i = 0; i < RTMC_NUM_AXES; i++) {
+        start_coords[i] = 0;
+        end_coords[i] = 0;
+    }
 }

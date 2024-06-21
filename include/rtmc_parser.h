@@ -16,9 +16,10 @@ extern "C" {
 #include "rtmc_path.h"
 
 enum rtmc_block_type {
-    RTMC_MODAL, RTMC_PATH, RTMC_DWELL, RTMC_CANNED_CYCLE
+    RTMC_BLOCK_TYPE_MODAL, RTMC_BLOCK_TYPE_PATH, RTMC_BLOCK_TYPE_DWELL,
+    RTMC_BLOCK_TYPE_CANNED_CYCLE
     // TODO: implement these (or similar) for G28, etc.
-    // RTMC_HOME, RTMC_PROBE
+    // RTMC_BLOCK_TYPE_HOME, RTMC_BLOCK_TYPE_PROBE
 };
 
 
@@ -48,7 +49,7 @@ enum rtmc_block_type {
 typedef struct {
     bool is_valid;
     char* error_msg;
-    enum rtmc_block_type block_type;
+    enum rtmc_block_type type;
     double position_error[RTMC_NUM_AXES];
     double dwell_time;
 } rtmc_parsed_block_t;
@@ -70,10 +71,10 @@ typedef struct {
 rtmc_parsed_block_t rtmc_parse(rtmc_path_queue_t* queue, const char* block);
 
 /*
-    A g-code block's meaning depends on modal data set by previous g-code 
-    blocks. This function clears that data.
+    A g-code block's meaning depends on previous g-code blocks.
+    This function clears that data.
 */
-void rtmc_flush_modal_data();
+void rtmc_flush_parser_data();
 
 
 

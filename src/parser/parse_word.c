@@ -19,13 +19,13 @@
 bool parse_word(word_t* word) {
 
     if(word->key == 'A') // A-words
-        modal_data.end_coords[RTMC_A_AXIS] = word->value;
+        end_coords[RTMC_A_AXIS] = word->value;
     
     else if(word->key == 'B') // B-words
-        modal_data.end_coords[RTMC_B_AXIS] = word->value;
+        end_coords[RTMC_B_AXIS] = word->value;
     
     else if(word->key == 'C') // C-words
-        modal_data.end_coords[RTMC_C_AXIS] = word->value;
+        end_coords[RTMC_C_AXIS] = word->value;
     
     else if(word->key == 'F') // F-words
         feed_rate = word->value;
@@ -73,34 +73,34 @@ bool parse_word(word_t* word) {
     else if(word->key == 'P') { // P-words
         // TODO: can also be a parameter
         // use if(modal_data.motion_mode == SOMETHING) to determine behavior
-        modal_data.end_coords[RTMC_P_AXIS] = word->value;
+        end_coords[RTMC_P_AXIS] = word->value;
     }
     else if(word->key == 'Q') { // Q-words
         // TODO: can also be a parameter
-        modal_data.end_coords[RTMC_Q_AXIS] = word->value;
+        end_coords[RTMC_Q_AXIS] = word->value;
     }
     else if(word->key == 'R') { // R-words
         // TODO: can also be a parameter
-        modal_data.end_coords[RTMC_R_AXIS] = word->value;
+        end_coords[RTMC_R_AXIS] = word->value;
     }
 
     else if(word->key == 'U') // U-words
-        modal_data.end_coords[RTMC_U_AXIS] = word->value;
+        end_coords[RTMC_U_AXIS] = word->value;
     
     else if(word->key == 'V') // V-words
-        modal_data.end_coords[RTMC_V_AXIS] = word->value;
+        end_coords[RTMC_V_AXIS] = word->value;
     
     else if(word->key == 'W') // W-words
-        modal_data.end_coords[RTMC_W_AXIS] = word->value;
+        end_coords[RTMC_W_AXIS] = word->value;
     
     else if(word->key == 'X') // X-words
-        modal_data.end_coords[RTMC_X_AXIS] = word->value;
+        end_coords[RTMC_X_AXIS] = word->value;
     
     else if(word->key == 'Y') // Y-words
-        modal_data.end_coords[RTMC_Y_AXIS] = word->value;
+        end_coords[RTMC_Y_AXIS] = word->value;
     
     else if(word->key == 'Z') // Z-words
-        modal_data.end_coords[RTMC_Z_AXIS] = word->value;
+        end_coords[RTMC_Z_AXIS] = word->value;
     
     else // unrecognized key
         return false;

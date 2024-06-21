@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "rtmc_path.h"
 
-TEST(PathTests, Queue_Typical) {
+TEST(PathQueueTests, Queue_Typical) {
     // create queue
     rtmc_path_queue_t queue = rtmc_create_path_queue();
     EXPECT_FALSE(queue.head);
@@ -36,7 +36,7 @@ TEST(PathTests, Queue_Typical) {
     EXPECT_FALSE(queue.tail);
 }
 
-TEST(PathTests, Queue_Underflow) {
+TEST(PathQueueTests, Queue_Underflow) {
     // initialize an empty queue
     rtmc_path_queue_t queue = rtmc_create_path_queue();
     EXPECT_NO_THROW(rtmc_path_dequeue(&queue));
@@ -45,7 +45,7 @@ TEST(PathTests, Queue_Underflow) {
     EXPECT_FALSE(queue.tail);
 }
 
-TEST(PathTests, Queue_Peek) {
+TEST(PathQueueTests, Queue_Peek) {
     rtmc_path_queue_t queue = rtmc_create_path_queue();
 
     // create path
@@ -63,7 +63,7 @@ TEST(PathTests, Queue_Peek) {
 
 }
 
-TEST(PathTests, Queue_Flush) {
+TEST(PathQueueTests, Queue_Flush) {
     rtmc_path_queue_t queue = rtmc_create_path_queue();
 
     // create path

@@ -20,6 +20,10 @@
 #include "rtmc_parser.h"
 #include "rtmc_path.h"
 
+// magic numbers
+#define NUM_RELATIVE_OFFSETS 3
+
+
 /*
     Below contains an enum for each modal group.
 
@@ -61,14 +65,12 @@ typedef struct {
     enum motion_mode motion_mode;
     enum plane_mode plane_mode;
     enum distance_mode distance_mode;
-    double start_coords[RTMC_NUM_AXES];
-    double end_coords[RTMC_NUM_AXES];
 } modal_data_t;
 
 // this struct groups all non-modal data together for use within the parser
 typedef struct {
     enum non_modal_mode mode;
-    double relative_offset[3];
+    double relative_offset[NUM_RELATIVE_OFFSETS];
 } non_modal_data_t;
 
 
@@ -79,6 +81,8 @@ typedef struct {
 extern modal_data_t modal_data;
 extern non_modal_data_t non_modal_data;
 extern double feed_rate;
+extern double start_coords[RTMC_NUM_AXES];
+extern double end_coords[RTMC_NUM_AXES];
 
 
 
